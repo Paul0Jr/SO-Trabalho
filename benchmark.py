@@ -257,7 +257,7 @@ def plot_contention(metrics: dict):
 def plot_throughput(metrics: dict):
     try:
         if not any(metrics[p].get('throughput_ops_sec', 0) for p in metrics.keys()):
-            print("    ⚠ Sem dados de throughput, pulando...")
+            print("    Sem dados de throughput")
             return
             
         fig, ax = plt.subplots(figsize=(10, 6))

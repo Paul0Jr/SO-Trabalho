@@ -175,12 +175,11 @@ class LFUCache(CacheBase):
 
 
 class DeduplicatedCache(CacheBase):
-    """Cache with deduplication support for shared pages"""
     def __init__(self, capacity: int, policy: str):
         super().__init__(capacity, policy)
         self.base_cache = make_cache(capacity, policy, enable_dedup=False)
-        self.content_hash = {}  # hash -> (file_id, refcount)
-        self.file_to_hash = {}  # file_id -> hash
+        self.content_hash = {}
+        self.file_to_hash = {}
         self.dedup_savings = 0
 
     def _hash_content(self, file_id: str) -> str:
@@ -194,13 +193,11 @@ class DeduplicatedCache(CacheBase):
         with self.lock:
             content_hash = self._hash_content(key)
             
-            # Check if content already exists
             if content_hash in self.content_hash:
                 self.content_hash[content_hash]['refcount'] += 1
                 self.dedup_savings += 1
                 return
             
-            # New unique content
             self.base_cache.put(key, dirty)
             self.content_hash[content_hash] = {
                 'file_id': key,
@@ -308,22 +305,19 @@ class Hypervisor:
         
         try:
             if self.write_policy == "write-back":
-                # Write to cache only, mark dirty
                 self.host_cache.put(file_id, dirty=True)
                 if SIMULATE_SLEEP:
                     time.sleep(self.host_latency / 1000.0)
                 return ("host", self.host_latency)
             
             elif self.write_policy == "write-through":
-                # Write to cache and disk immediately
                 disk_lat = self.disk.write(file_id, data)
                 self.host_cache.put(file_id, dirty=False)
                 if SIMULATE_SLEEP:
                     time.sleep(self.host_latency / 1000.0)
                 return ("disk", disk_lat + self.host_latency)
             
-            else:  # write-around
-                # Write directly to disk, bypass cache
+            else:
                 disk_lat = self.disk.write(file_id, data)
                 return ("disk", disk_lat)
                 
@@ -362,7 +356,6 @@ class VM:
             else:
                 self.reads += 1
 
-        # Handle reads
         if operation == "read":
             if self.cache.get(file_id):
                 with self.lock:
@@ -389,7 +382,6 @@ class VM:
 
             return (where, total_latency)
         
-        # Handle writes
         else:
             if self.write_policy == "write-back":
                 if self.cache.get(file_id):
@@ -410,7 +402,7 @@ class VM:
                         self.latency += total_latency
                     return (where, total_latency)
             
-            else:  # write-through or write-around
+            else:
                 where, latency = self.hypervisor.write(file_id, "data")
                 total_latency = latency + self.vm_latency
                 
@@ -541,7 +533,6 @@ class Simulator:
             raise ValueError("Unknown workload mode")
 
     def _build_workload_zipf(self, wcfg: Dict) -> List[Dict]:
-        """Generate realistic Zipf-distributed workload"""
         zipf_cfg = wcfg.get("zipf", {})
         length = zipf_cfg.get("length", 1000)
         n_files = zipf_cfg.get("n_files", 100)
