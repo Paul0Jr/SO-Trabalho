@@ -278,25 +278,6 @@ def plot_throughput(metrics: dict):
     except Exception as e:
         print(f"    Erro: {e}")
 
-def plot_deduplication_savings(metrics: dict):
-    try:
-        policies = list(metrics.keys())
-        savings = [metrics[p].get('dedup_savings', 0) for p in policies]
-        
-        fig, ax = plt.subplots(figsize=(10, 6))
-        bars = ax.bar(policies, savings, color='#9b59b6')
-        
-        ax.set_title('Economia com Deduplicação', fontweight='bold')
-        ax.set_ylabel('Entradas Compartilhadas')
-        ax.bar_label(bars)
-        ax.grid(axis='y', alpha=0.3)
-        
-        plt.tight_layout()
-        plt.savefig('graph_deduplication.png', dpi=300)
-        plt.close(fig)
-    except Exception as e:
-        print(f"    Erro: {e}")
-
 def load_config(path: str) -> Dict:
     with open(path) as f: 
         return json.load(f)
@@ -470,7 +451,6 @@ def main():
         plot_efficiency(all_metrics)
         plot_contention(all_metrics)
         plot_throughput(all_metrics)
-        plot_deduplication_savings(all_metrics)
         
         for policy in policies:
             plot_timeline(access_logs[policy], policy)
@@ -502,7 +482,6 @@ def main():
         plot_efficiency(all_metrics)
         plot_contention(all_metrics)
         plot_throughput(all_metrics)
-        plot_deduplication_savings(all_metrics)
         plot_timeline(access_logs[default_policy], default_policy)
         
     print("\n Processo concluído.\n")
