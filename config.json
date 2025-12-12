@@ -2,18 +2,29 @@
     "seed": 1,
     "vm_count": 8,
     "vm_cache_size": 3,
-    "host_cache_size": 2,
-    "vm_cache_policy": "FIFO",
-    "host_cache_policy": "FIFO",
+    "host_cache_size": 8,
+    "vm_cache_policy": "LRU",
+    "host_cache_policy": "LRU",
     "vm_latency": 1,
     "host_latency": 4,
     "disk_latency": 15,
+    "disk_write_latency": 30,
+
+    "write_policy": "write-back",
+    "enable_deduplication": false,
 
     "workload": {
-        "mode": "random",
+        "mode": "zipf",
+        "zipf": {
+            "length": 1000,
+            "n_files": 100,
+            "alpha": 1.5,
+            "write_ratio": 0.3
+        },
         "random": {
             "length": 50,
-            "files": ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
+            "files": ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"],
+            "write_ratio": 0.3
         }
     },
 
